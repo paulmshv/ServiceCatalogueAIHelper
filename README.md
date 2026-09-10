@@ -124,6 +124,229 @@ npm run typecheck
 4. **Рекомендация**: AI показывает топ-5 наиболее подходящих услуг
 5. **Создание заявки**: Пользователь выбирает услугу и создаёт заявку с описанием
 
+## 🌐 Развёртывание на GitHub Pages
+
+### Способ 1: Автоматический деплой через GitHub Actions (рекомендуется)
+
+#### Шаг 1: Настройка Vite
+
+Создайте или обновите файл `vite.config.js` в корне проекта:
+
+```javascript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  base: '/название-вашего-репозитория/', // Замените на имя вашего репозитория
+  server: {
+    host: "0.0.0.0",
+    port: 3000,
+    strictPort: true,
+    hmr: {
+      port: 3000,
+    },
+  },
+});
+```
+
+**Важно**: Если ваш репозиторий называется `my-it-support`, то `base` должен быть `/my-it-support/`. Если вы используете кастомный домен, оставьте `base: '/'`.
+
+#### Шаг 2: Создание GitHub Actions workflow
+
+Создайте файл `.github/workflows/deploy.yml` в корне проекта:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  # Запуск при push в ветку main
+  push:
+    branches: [ main ]
+  # Возможность ручного запуска из вкладки Actions
+  workflow_dispatch:
+
+# Установка прав для GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Разрешить только один одновременный деплой
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Сборка проекта
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  # Деплой на GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+#### Шаг 3: Настройка GitHub Pages
+
+1. Перейдите в ваш репозиторий на GitHub
+2. Откройте **Settings** → **Pages**
+3. В разделе **Build and deployment** → **Source** выберите **GitHub Actions**
+4. Сохраните изменения
+
+#### Шаг 4: Деплой
+
+1. Запушьте изменения в ветку `main`:
+```bash
+git add .
+git commit -m "Add GitHub Pages deployment"
+git push origin main
+```
+
+2. Перейдите во вкладку **Actions** в вашем репозитории
+3. Дождитесь завершения workflow
+4. Ваше приложение будет доступно по адресу: `https://ваш-username.github.io/название-репозитория/`
+
+### Способ 2: Ручной деплой
+
+#### Шаг 1: Сборка проекта
+
+```bash
+npm run build
+```
+
+#### Шаг 2: Установка gh-pages
+
+```bash
+npm install --save-dev gh-pages
+```
+
+#### Шаг 3: Добавление скрипта в package.json
+
+Добавьте в раздел `scripts`:
+
+```json
+{
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
+```
+
+#### Шаг 4: Настройка base в vite.config.js
+
+```javascript
+export default defineConfig({
+  // ... другие настройки
+  base: '/название-вашего-репозитория/',
+});
+```
+
+#### Шаг 5: Деплой
+
+```bash
+npm run deploy
+```
+
+#### Шаг 6: Настройка GitHub Pages
+
+1. Перейдите в **Settings** → **Pages**
+2. В разделе **Source** выберите ветку `gh-pages`
+3. Сохраните изменения
+4. Через несколько минут сайт будет доступен
+
+### Обновление сайта
+
+После внесения изменений просто выполните:
+
+```bash
+git add .
+git commit -m "Update content"
+git push origin main
+```
+
+GitHub Actions автоматически пересоберёт и задеплоит новую версию.
+
+### Использование кастомного домена
+
+Если вы хотите использовать свой домен:
+
+1. Создайте файл `CNAME` в папке `public/` с содержимым вашего домена (например, `support.example.com`)
+2. В настройках GitHub Pages укажите ваш домен
+3. Настройте DNS-записи у вашего регистратора:
+   - Для apex домена (example.com): A-записи на IP GitHub
+   - Для subdomain (support.example.com): CNAME на `ваш-username.github.io`
+
+### Устранение неполадок
+
+**Проблема**: Страница не загружается, белый экран
+
+**Решение**:
+- Проверьте, что `base` в `vite.config.js` совпадает с именем репозитория
+- Убедитесь, что workflow завершился успешно во вкладке Actions
+- Проверьте консоль браузера на наличие ошибок
+
+**Проблема**: Не работают стили или скрипты
+
+**Решение**:
+- Проверьте пути к ресурсам в `dist/index.html`
+- Убедитесь, что все пути начинаются с правильного base path
+- Пересоберите проект: `npm run build`
+
+**Проблема**: 404 при обновлении страницы
+
+**Решение**:
+- Для SPA приложений создайте файл `public/404.html` с редиректом
+- Или используйте hash router вместо browser router
+
+### Полезные команды
+
+```bash
+# Локальная проверка сборки
+npm run build
+npx serve dist
+
+# Проверка перед деплоем
+npm run typecheck
+npm run build
+
+# Просмотр логов деплоя
+# Перейдите в Actions → ваш workflow → посмотрите логи
+```
+
 ## 📝 Лицензия
 
 Проект создан для демонстрации возможностей AI-помощника в IT-поддержке.
