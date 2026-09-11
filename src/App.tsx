@@ -45,9 +45,9 @@ function AppContent() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Top Navigation */}
-      <header className="bg-white border-b border-gray-200 shadow-sm z-10">
+      <header className="bg-white border-b border-gray-200 shadow-sm z-10 flex-shrink-0">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <button
@@ -150,7 +150,7 @@ function AppContent() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Sidebar - visible on larger screens */}
         <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-20 w-72 bg-white border-r border-gray-200 transition-transform duration-300 lg:w-80 flex flex-col pt-16 lg:pt-0`}>
           <div className="p-4 border-b border-gray-200">
@@ -218,10 +218,10 @@ function AppContent() {
         )}
 
         {/* Main area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col min-h-0">
           {currentView === 'chat' && (
-            <div className="flex-1 flex flex-col bg-white">
-              <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex-1 flex flex-col bg-white min-h-0">
+              <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                     <i className="fas fa-robot text-white text-xs"></i>
@@ -232,15 +232,15 @@ function AppContent() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 min-h-0">
                 <AIChat onSelectService={handleSelectService} />
               </div>
             </div>
           )}
 
           {currentView === 'catalog' && (
-            <div className="flex-1 flex flex-col bg-white">
-              <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-teal-50">
+            <div className="flex-1 flex flex-col bg-white min-h-0">
+              <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-teal-50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center">
                     <i className="fas fa-th-list text-white text-xs"></i>
@@ -251,7 +251,7 @@ function AppContent() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 min-h-0">
                 <ServiceCatalog
                   onSelectService={handleSelectService}
                   selectedCategory={selectedCategory}
@@ -262,7 +262,7 @@ function AppContent() {
           )}
 
           {currentView === 'detail' && selectedService && (
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-white min-h-0">
               <ServiceDetail
                 service={selectedService}
                 onBack={handleBack}

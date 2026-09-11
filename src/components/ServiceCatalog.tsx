@@ -20,9 +20,9 @@ export default function ServiceCatalog({ onSelectService, selectedCategory, onSe
   });
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col min-h-0">
       {/* Search */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="relative">
           <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input
@@ -44,7 +44,7 @@ export default function ServiceCatalog({ onSelectService, selectedCategory, onSe
       </div>
 
       {/* Categories */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <button
             onClick={() => onSelectCategory(null)}
@@ -73,7 +73,7 @@ export default function ServiceCatalog({ onSelectService, selectedCategory, onSe
       </div>
 
       {/* Services list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
         {filteredServices.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <i className="fas fa-search text-3xl mb-3 block"></i>

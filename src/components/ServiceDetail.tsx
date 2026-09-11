@@ -11,9 +11,9 @@ export default function ServiceDetail({ service, onBack, onSubmitRequest }: Serv
   const category = categories.find(c => c.id === service.category);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col min-h-0">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm"
@@ -24,7 +24,7 @@ export default function ServiceDetail({ service, onBack, onSubmitRequest }: Serv
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 min-h-0">
         <div className="max-w-lg mx-auto">
           {/* Service header */}
           <div className="text-center mb-6">
