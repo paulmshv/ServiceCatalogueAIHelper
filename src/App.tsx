@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AuthPage from './components/AuthPage';
 import AIChat from './components/AIChat';
 import ServiceCatalog from './components/ServiceCatalog';
 import ServiceDetail from './components/ServiceDetail';
@@ -6,11 +8,18 @@ import { Service } from './data/services';
 
 type View = 'chat' | 'catalog' | 'detail';
 
-function App() {
+function AppContent() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [currentView, setCurrentView] = useState<View>('chat');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Если пользователь не авторизован, показываем страницу входа
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
 
   const handleSelectService = (service: Service) => {
     setSelectedService(service);
@@ -23,7 +32,16 @@ function App() {
   };
 
   const handleSubmitRequest = (service: Service, description: string) => {
-    console.log(`Заявка на услугу "${service.name}": ${description}`);
+    console.log(`Заявка на услугу "${service.name}" от ${user?.email}: ${description}`);
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -75,15 +93,58 @@ function App() {
             </button>
           </nav>
 
-          {/* User info */}
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Онлайн</span>
-            </div>
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <i className="fas fa-user text-gray-500 text-sm"></i>
-            </div>
+          {/* User menu */}
+          <div className="relative">
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors"
+            >
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="hidden lg:inline">{user?.name}</span>
+              </div>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                {user?.name ? getInitials(user.name) : <i className="fas fa-user text-sm"></i>}
+              </div>
+            </button>
+
+            {/* Dropdown menu */}
+            {userMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)}></div>
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-20 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {user?.name ? getInitials(user.name) : <i className="fas fa-user"></i>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-gray-800 truncate">{user?.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    {user?.department && (
+                      <div className="px-3 py-2 text-sm text-gray-600">
+                        <i className="fas fa-building mr-2 text-gray-400"></i>
+                        {user.department}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <i className="fas fa-sign-out-alt"></i>
+                      Выйти из аккаунта
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -212,6 +273,14 @@ function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
